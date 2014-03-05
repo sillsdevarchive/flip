@@ -27,6 +27,25 @@ signature = tempfile.NamedTemporaryFile().name
 
 procfile = sys.argv[1]
 
+
+
+
+
+# Hi Flip,
+# I would add a couple things. First, you should always test to see that your
+# files are good to use by at least seeing if they exist. You can do that using
+# this command: if os.path.exists(filenameandpath) :
+# If it doesn't then you need to safely exit the script. You can also test to
+# see if it is a file or directory by changing exists for isfile or isdir.
+
+# Another thing would be to put more usage documentation at the begining of
+# the script. The comments you have added are good but for general use having
+# something at the start is the best thing. Explaining things like how to work
+# with the front_matter file and such would be good.
+
+
+
+
 # DETERMINE THE NUMBER OF PAGES in the procfile pdf document
 
 # pages in procfile
