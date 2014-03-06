@@ -32,7 +32,7 @@ import os, sys, shutil, re, codecs, subprocess, tempfile
 # Initial settings
 paperWidth = 483.02     # 6.71in at 72 dpi
 paperHeight = 667.28    # 9.27in at 72 dpi
-
+#stampfile= "dummyID_stamps_trunc"   # file containing stamp texts
 stampfile = sys.argv[1]     # defines the input file at script command level
 							# like "./stamp_sh.py dummyID_stamps_trunc"
 							# in which "./stamp_sh.py" is sys.argv[0] and
