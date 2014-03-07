@@ -62,8 +62,40 @@ signature = tempfile.NamedTemporaryFile().name
 # (by default), wholeNT.pdf is sys.argv[1] and front_matter is sys.argv[2]
 # More arguments may be added as needed
 
-procfile = sys.argv[1]
-other = sys.argv[2]
+
+# Flip, here is a test you can do on the incoming files first
+try :
+	procfile = sys.argv[1]
+	other = sys.argv[2]
+except Exception as e :
+	if str(e) == 'list index out of range' :
+		sys.exit('Missing input file, must provide two (expand message if you want)')
+	else :
+		sys.exit('Input file error: ' + str(e))
+
+
+
+
+
+# The exists() (or similar) command could be used here to make sure that the file
+# name given is real. I would do something like this
+
+if not os.path.isfile(procfile) :
+	msg = 'This file: ' + procfile + ' is no good!'
+	sys.exit(msg)
+
+if not os.path.isfile(other) :
+	msg = 'This file: ' + other + ' is no good!'
+	sys.exit(msg)
+
+# Same for "other". You should always test your incoming data so you
+# can better control an exit if something isn't right.
+
+
+
+
+
+
 
 # DETERMINE THE NUMBER OF PAGES in the procfile pdf document
 
