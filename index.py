@@ -4,7 +4,10 @@
 ###############################################################################
 ################################### Intro #####################################
 ###############################################################################
-
+#
+# Open with: "./extract.py wholeNT.pdf TOC.csv" with terminal opened in the
+# workdirectory.
+#
 # This python script will generate a printed thumb index on the final version
 # of a New Testament or whole Bible. In addition to the script a pdf of the
 # whole NT/Bible and a list of start/end pages of individual bible books has
@@ -120,7 +123,9 @@ with codecs.open(other, 'rt') as contents :
 ###############################################################################
 
 # EXTRACTING THE PAGE PDF with
-# subprocess call(["pdftk", procfile, "cat", bookLen, "output", extract])
+# subprocess call(["pdftk", "in.pdf" , "cat", "pages", "output", "out.pdf"])
+# with in.pdf = procfile; pages = bookLen and out.pdf = extract
+
 			subprocess.call(["pdftk", procfile, "cat", bookLen, "output", extract])
 
 			M_all_extracts.append(str(extract)) # file names of extracted books are appended into
@@ -227,8 +232,6 @@ with codecs.open(other, 'rt') as contents :
 ######################### CONVERSION OF SVG TO STAMP PDF ########################
 #################################################################################
 
-
-
 # convert svgodd to pdfodd for odd pages of MAT thru REV
 					subprocess.call(["rsvg-convert", "-f", "pdf", "-o", pdfodd, svgodd])
 
@@ -239,6 +242,14 @@ with codecs.open(other, 'rt') as contents :
 #################### SPLITTING INDIVIDUAL BOOK PDF IN ODD/EVEN ##################
 ############################# AND ADDING INDEXSTAMPS  ###########################
 #################################################################################
+#                                                                               #
+# The firstPage of individual bible books is not always an odd number, but can  #
+# be even as well. Thumb indexes are positioned left on odd and right on even   #
+# pages following the numbering of the original document. The odd/even property #
+# of the extracted files has to be reversed in order to get a correct placement #
+# of the thumb indexes in the final result.                                     #
+#                                                                               #
+#################################################################################
 
 #    Generate a pdf with only odd pages
 					if int(firstPage)%2 == 1:       # allowing for reversing odd to even
@@ -246,9 +257,7 @@ with codecs.open(other, 'rt') as contents :
 						# if the firstPage value is odd and splitting is straightforward odd=odd
 					else:
 						subprocess.call(["pdftk", "A=" + extract, "cat", "Aeven", "output", out_odd])
-						# if the firstPage value is even the splitting has to be reversed, i.e.
-						# the first even page number is counted as odd so that the proper stamp
-						# is added to the pages
+						# if the firstPage value is even the splitting has to be reversed odd=even
 
 #   Stamp odd pages with indexOdd.pdf
 					subprocess.call(["pdftk", out_odd, "stamp", pdfodd, "output", out_index_odd])
@@ -261,7 +270,7 @@ with codecs.open(other, 'rt') as contents :
 						# if the firstPage value is odd splitting is straightforward even=even
 					else:
 						subprocess.call(["pdftk", "A=" + extract, "cat", "Aodd", "output", out_even])
-						# in case the firsPage value is even the splitting has to reversed
+						# in case the firsPage value is even the splitting has to reversed even=odd
 
 #   Stamp even pages with indexEven.pdf
 					subprocess.call(["pdftk", out_even, "stamp", pdfeven, "output", out_index_even])
@@ -271,7 +280,7 @@ with codecs.open(other, 'rt') as contents :
 #################################################################################
 
 #   Combine odd and even pages to the original pdf now with indexes
-					if int(firstPage)%2 == 1:       # Undo the earlier odd/even reversal
+					if int(firstPage)%2 == 1:       # to undo the earlier odd/even reversal
 						subprocess.call(["pdftk", "A=" + out_index_odd, "B=" + out_index_even, "shuffle", "A", "B", "output", extract])
 					else:
 						subprocess.call(["pdftk", "A=" + out_index_even, "B=" + out_index_odd, "shuffle", "A", "B", "output", extract])
@@ -300,3 +309,7 @@ sys.stdout.write('\n    >>> to see the result open whole_book_indexed.pdf  <<<')
 					# text to signal the end of the program
 #sys.stdout.flush()
 print '\n'          # forcing a blank line between last text and prompt
+
+# the final result is opened for inspection
+
+os.system('xdg-open "whole_book_indexed.pdf"')
