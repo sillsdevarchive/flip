@@ -5,23 +5,23 @@
 ################################ INTRODUCTION #################################
 ###############################################################################
 #
-# Open with: "./intro.py wholeNT.pdf introPages.csv" while the terminal is
+# Open with: "./booktitle.py wholeNT.pdf TitlePages.csv" while the terminal is
 # opened in the workdirectory.
 #
-# This python script will add pagenumbers to the introduction pages of the
-# individual bible books of a New Testament or whole Bible. In addition to the
-# script a pdf of the whole NT/Bible and a list of introduction pages of the
-# individual books has to be supplied either in the workdirectory or with a
-# full path. In this page list there is to be an indication if the introduction
-# spills over to the next page.
+# This python script will add pagenumbers to the title pages of the individual
+# bible books of a New Testament or whole Bible. In addition to the script
+# script a pdf of the whole NT/Bible and a list of the title page numbers of the
+# bible books has to be supplied either in the workdirectory or with a
+# full path. In this page list there is to be an indication if the book
+# introduction spills over to the next page.
 
 # After setting up the environment (importing modules, defining initial
-# settings, temporary file and arguments) a working copy is made of the whole
-# NT/Bible pdf.
-
+# settings, temporary file and arguments) a working copy of the source text is
+# made in order to avoid unwanted changes in the whole NT/Bible pdf
+#
 # The whole process is written as a function definition, in which a svg of the
-# introduction page stamp is generated, converted and added to the appropriate
-# content page. This is done for each introduction page mentioned in the list.
+# book title page stamp is generated, converted and added to the appropriate
+# content page. This is done for each book title page mentioned in the list.
 #
 # The end product is written in the working pdf of the of the whole NT/Bible.
 # After inspection this file is to be renamed to the original file name.
@@ -38,16 +38,16 @@ paperWidth = 483.02     # 6.71in at 72 dpi
 paperHeight = 667.28    # 9.27in at 72 dpi#
 
 # ARGUMENTS ENTERED AT THE TIME of calling the script, i.e.
-# "./intro.py wholeNT.pdf introPages.csv", in which intro.py is sys.argv[0]
-# (by default), wholeNT.pdf is sys.argv[1] and introPages.csv is sys.argv[2]
+# "./booktitle.py wholeNT.pdf TitlePages.csv", in which booktitle.py is sys.argv[0]
+# (by default), wholeNT.pdf is sys.argv[1] and TitlePages.csv is sys.argv[2]
 # More arguments may be added as needed
 
 try :
 	procfile = sys.argv[1]      # wholeNT.pdf
-	other = sys.argv[2]         # introPages.csv
+	other = sys.argv[2]         # TitlePages.csv
 except Exception as e :         # Error message if either or both arguments are missing
 	if str(e) == 'list index out of range' :
-		sys.exit('\nMissing input file, you must provide two input files:\n 1. pdf of the NT you want a print dummy of and\n 2. text file containing a list of the start (introduction) pages of the individual bible books\n')
+		sys.exit('\nMissing input file, you must provide two input files:\n 1. pdf of the whole NT or Bible and\n 2. text file containing a list of the start (book title) pages of the individual bible books\n')
 	else :
 		sys.exit('Input file error: ' + str(e))
 
@@ -65,16 +65,16 @@ if not os.path.isfile(other) :
 ################################## PROGRESS ###################################
 ###############################################################################
 #                                                                             #
-# The process of adding page numbers on the introduction pages of a whole     #
+# The process of adding page numbers on the book title pages of a whole     #
 # Bible or NT takes some time therefore the progress is make visible by some  #
 # explanatory text and a sequence of greater-than signs '>'.                  #
 #                                                                             #
 ###############################################################################
 
-sys.stdout.write('\n Initiating proces')
+sys.stdout.write('\n Initiating process')
 			# text to signal the progress of the program
 sys.stdout.flush()
-print '\n Wait, adding pagenumbers to book introduction pages \n    ',
+print '\n Please wait, the program is adding pagenumbers to book title pages \n    ',
 			# forcing a blank line between last text and prompt
 
 ###############################################################################
@@ -95,7 +95,7 @@ shutil.copy(procfile, 'result.pdf')
 # FUNCTION DEFINITION.
 # Temporary files are notified as comment between [] where they are used
 def svg_pdf(stampSVG, stampPDF):
-	"Generate a svg of the introduction page stamp; convert to pdf; stamp the appropriate introduction page (from other) and combine with contents (procfile)"
+	"Generate a svg of the book title page stamp; convert to pdf; stamp the appropriate book title page (from other) and combine with contents (procfile)"
 
 	with codecs.open(stampSVG, 'wb') as fstamp :            # open file for writing [stampSVG]
 
@@ -125,26 +125,26 @@ version="1.1" width="''')
 	#   CONVERSION OF stamp svg into stamp pdf with rsvg-convert [stampPDF]
 	subprocess.call(["rsvg-convert", "-f", "pdf", "-o", stampPDF, stampSVG])
 
-	#   EXTRACTING the introduction page [intP]
-	subprocess.call(["pdftk", procfile, "cat", introPage, "output", intP])
+	#   EXTRACTING the book title page [intP]
+	subprocess.call(["pdftk", procfile, "cat", bkTitPage, "output", intP])
 
-	#   STAMPING the introduction page with page number [stamped]
+	#   STAMPING the book title page with page number [stamped]
 	subprocess.call(["pdftk", intP, "stamp", stampPDF, "output", stamped])
 
-	#   DETERMINING page ranges before and after introduction page
-	before = "1-" + str(int(introPage) - 1)  # 'before' from page 1 up to introduction page
-	after = str(int(introPage) + 1) + "-end"  # 'after' from page following introduction page to end
+	#   DETERMINING page ranges before and after book title page
+	before = "1-" + str(int(bkTitPage) - 1)  # 'before' from page 1 up to book title page
+	after = str(int(bkTitPage) + 1) + "-end"  # 'after' from page following book title page to end
 
-	#   EXTRACTING page ranges before and after introduction page [firstpart, lastpart]
+	#   EXTRACTING page ranges before and after book title page [firstpart, lastpart]
 	subprocess.call(['pdftk', 'A=result.pdf', 'cat', before,'output', firstpart])
 	subprocess.call(['pdftk', 'A=result.pdf', 'cat', after,'output', lastpart])
 
-	#   COMBINING page ranges and introduction page back to whole
+	#   COMBINING page ranges and book title page back to whole
 	subprocess.call(['pdftk', firstpart, stamped, lastpart, 'output', 'resultstamped.pdf'])
 
 	#   RENAMING combined pages to working pdf. This is needed to allow defining
 	#   'A=result.pdf' in the generation of [firstpart] and [lastpart] for the next
-	#   introduction page.
+	#   book title page.
 	os.rename('resultstamped.pdf', 'result.pdf')
 
 #---------------------------------------------------------------------------------
@@ -163,10 +163,10 @@ version="1.1" width="''')
 # DEFINITION OF TEMPORARY FILES
 stampSVG = tempfile.NamedTemporaryFile().name   # stamp image generated as svg
 stampPDF = tempfile.NamedTemporaryFile().name   # stamp image converted to pdf
-intP = tempfile.NamedTemporaryFile().name       # extracted introduction page pdf
+intP = tempfile.NamedTemporaryFile().name       # extracted book title page pdf
 stamped = tempfile.NamedTemporaryFile().name    # intP stamped with stampPDF
-firstpart = tempfile.NamedTemporaryFile().name  # page range before introduction page
-lastpart = tempfile.NamedTemporaryFile().name   # page range after introduction page
+firstpart = tempfile.NamedTemporaryFile().name  # page range up to the book title page
+lastpart = tempfile.NamedTemporaryFile().name   # page range after the booktitle page to the end
 
 #Open extractfile for reading
 with codecs.open(other, 'rt') as contents :
@@ -176,16 +176,16 @@ with codecs.open(other, 'rt') as contents :
 		if locate <> [""]:
 			# ASSIGNMENT OF VALUES TO VARIABLES
 			count = locate[0]                   # counter
-			introPage = locate[1]               # page number of introduction in whole NT
+			bkTitPage = locate[1]               # page number of book title in whole NT
 			actualPage = locate[2]              # page number as entered on the page
 			abcissa_text = (paperWidth)/2       # horizontal position of page number
 			ordinate_text = 615                 # vertical position of page number bottom
-			secondIntroPage = locate[3]         # introduction spills to next page: yes/no
+			secondbkTitPage = locate[3]         # book introduction spills to next page: yes/no
 			svg_pdf(stampSVG, stampPDF)         # run function
 
-			if secondIntroPage == 'yes':
-				# CHANGING VALUES OF VARIABLES FOR TWO PAGE INTRODUCTIONS
-				introPage = str (int(locate[1]) + 1)    # next page number in document
+			if secondbkTitPage == 'yes':
+				# CHANGING VALUES OF VARIABLES FOR TWO PAGE BOOK INTRODUCTIONS
+				bkTitPage = str (int(locate[1]) + 1)    # next page number in document
 				actualPage = str (int(locate[2]) + 1)   # next page number on page
 				abcissa_text = (paperWidth)/2           # horizontal position of page number
 				ordinate_text = 63                      # vertical position of page number top
@@ -194,7 +194,7 @@ with codecs.open(other, 'rt') as contents :
 #---------------------------------------------------------------------------------
 # PROGRESS
 sys.stdout.write('>>> numbering is done <<<')
-sys.stdout.write('\n    >>> to see the result open result.pdf  <<<')
+sys.stdout.write('\n    >>> see the finished product in result.pdf  <<<')
 					# text to signal the end of the program
 #sys.stdout.flush()
 print '\n'          # forcing a blank line between last text and prompt
@@ -202,6 +202,12 @@ print '\n'          # forcing a blank line between last text and prompt
 #---------------------------------------------------------------------------------
 
 # FINAL RESULT
-# the final result is opened for inspection
+# the final result may be opened for inspection
 
-os.system('xdg-open "result.pdf"')
+print "\n     Do you want to inspect the finished product?"
+answer=raw_input("     answer with y to inspect or just enter to finish   ")
+if answer == 'y':
+	print '\n     You choose to inspect the result,\n     here it is\n'
+	os.system('xdg-open "result.pdf"')
+else :
+	print '\n     You choose not to inspect the result,\n     the program is now finished\n'
