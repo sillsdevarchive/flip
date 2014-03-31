@@ -71,6 +71,7 @@ if not os.path.isfile(other) :
 #                                                                             #
 ###############################################################################
 
+os.system('clear')
 sys.stdout.write('\n Initiating process')
 			# text to signal the progress of the program
 sys.stdout.flush()
@@ -194,7 +195,7 @@ with codecs.open(other, 'rt') as contents :
 #---------------------------------------------------------------------------------
 # PROGRESS
 sys.stdout.write('>>> numbering is done <<<')
-sys.stdout.write('\n    >>> see the finished product in result.pdf  <<<')
+#sys.stdout.write('\n    >>> see the finished product in result.pdf  <<<')
 					# text to signal the end of the program
 #sys.stdout.flush()
 print '\n'          # forcing a blank line between last text and prompt
@@ -204,8 +205,8 @@ print '\n'          # forcing a blank line between last text and prompt
 # FINAL RESULT
 # the final result may be opened for inspection
 
-print "\n     Do you want to inspect the finished product?"
-answer=raw_input("     answer with y to inspect or just enter to finish   ")
+print "\n    >>> Do you want to inspect the finished product?  <<<"
+answer=raw_input("    >>> answer with y to inspect or any other letter to finish   ")
 if answer == 'y':
 	print '\n     You choose to inspect the result,\n     here it is\n'
 	os.system('xdg-open "result.pdf"')
