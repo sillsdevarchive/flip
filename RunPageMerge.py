@@ -14,7 +14,7 @@ from pageMerge import PageMerge
 pMerge = PageMerge()
 
 # Give the module the page dimensions we will be working with
-pMerge.calculate(148, 210, 210, 297)
+pMerge.calculate(145, 210, 210, 297)
 
 # Run the main function of the module
-pMerge.center('MALpage.pdf', 'output.pdf')
+pMerge.center('Rompage.pdf', 'output.pdf')

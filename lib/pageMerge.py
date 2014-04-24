@@ -36,3 +36,7 @@ class PageMerge (object) :
 		pageyoffset = ((bgHeight - fgHeight)/2) * factor
 
 		self.pageoffset = str(pagexoffset) + " " + str(pageyoffset)
+
+
+
+
