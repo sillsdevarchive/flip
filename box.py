@@ -14,7 +14,7 @@
 # on the A4 background.
 #
 # A SVG file is generated based on calculated co-ordinates of the box rectangle
-# With RSVG-convert the SVG is
+# With RSVG-convert the SVG is converted to a pdf.
 # The end product combined with a test pdf to a markedBOX pdf that can be opened
 # to check the result.
 #
@@ -28,9 +28,26 @@ import os, sys, codecs, subprocess, tempfile
 # INITIAL SETTINGS
 procfile = sys.argv[1]      # wholeNT.pdf
 
+# FUNCTION DEFINITION
+def boxsvg(A4Width, A4Height,pageWidth,pageHeight) :
+	"This function writes the SVG code for the rectangular page border"
+
+	with codecs.open(backgrSVG, 'wb') as fbackgr :      # open file for writing
+
+				# starting lines of SVG xml
+		fbackgr.write( '''<svg xmlns="http://www.w3.org/2000/svg"
+	version="1.1" width = "'''+str (round(A4Width,1))+'''" height = "'''+str (round(A4Height,1))+ '''">''')
+				# rectangle
+		fbackgr.write( '''<rect x = "'''+str (round((A4Width - pageWidth)/2,1))+'''" y= "'''+str (round((A4Height - pageHeight)/2,1))+'''" height = "'''+str (round(pageHeight,1))+'''" width = "'''+str (round(pageWidth,1))+'''" style = "fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:.2"/>
+	</svg>''')
+
+		fbackgr.close()                                 # close file for writing
+	return
+
 # TEMPORARY FILES
 backgrSVG = tempfile.NamedTemporaryFile().name  #"backgr.svg"
 backgrPDF = tempfile.NamedTemporaryFile().name  #"backgr.pdf"
+
 
 # IMPORTING PAGE DIMENSIONS
 from configobj import ConfigObj
@@ -52,35 +69,12 @@ ah = float(A4Height) * factor
 pw = float(pageWidth) * factor
 ph = float(pageHeight) * factor
 
-#   GENERATE A SVG of the watermark; convert to pdf; add watermark backgound to the wholeNT"
+# GENERATE A SVG of the page border; convert to pdf; add page border backgound to the procfile.
 
-with codecs.open(backgrSVG, 'wb') as fbackgr :            # open file for writing
-
-#   SVG INTRODUCTION
-	fbackgr.write( '''<svg xmlns="http://www.w3.org/2000/svg"
-version="1.1" width = "''')
-
-#   PAGE DIMENSIONS
-	fbackgr.write(str (aw))
-	fbackgr.write( '''" height = "''')
-	fbackgr.write(str (ah))
-	fbackgr.write( '''">
-<rect x = "''')
-	fbackgr.write(str ((aw - pw)/2))
-	fbackgr.write( '''" y= "''')
-	fbackgr.write(str ((ah - ph)/2))
-	fbackgr.write( '''" height = "''')
-	fbackgr.write(str (ph))
-	fbackgr.write( '''" width = "''')
-	fbackgr.write(str (pw))
-	fbackgr.write('''"
-style = "fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:.1"/>
-</svg>''')
-
-	fbackgr.close()        # GENERATION of background svg finished
+boxsvg(aw,ah,pw,ph)
 
 #   CONVERSION OF stamp svg into stamp pdf with rsvg-convert
 subprocess.call(["rsvg-convert", "-f", "pdf", "-o", backgrPDF, backgrSVG])
 
-#   WATERMARKING wholeNT with backgrPDF
+#   ADD page border to procfile with backgrPDF
 subprocess.call(["pdftk", procfile, "background", backgrPDF, "output", "markedBOX.pdf"])
