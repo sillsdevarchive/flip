@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf_8 -*-
 
+# By Flip Wester (flip_wester@sil.org)
+
 ###############################################################################
 ################################ INTRODUCTION #################################
 ###############################################################################
@@ -8,10 +10,13 @@
 # Open with: "./watermark.py wholeKYUROM.pdf" while the terminal is
 # opened in the workdirectory.
 #
-# This python script will generate a DRAFT watermark for Rapuma projects on
-# A4 size background. Page dimensions are read in from the project's layout
-# config file and converted to float pixel value. The watermark is centered
-#  on the A4 background.
+# This python script will generate a DRAFT watermark for Rapuma projects ona big
+# sheet(A4 size) to define a rendered NT page (A5 size) and centered on the
+# big sheet background. Page dimensions are extracted directly from the pdfs
+# with the pyPdf element # "pdf.getPage(0).mediaBox" and coverted to float
+#
+# A SVG file is generated based on extracted sheet and page size. The SVG is
+# converted to a PDF with RSVG-convert
 #
 # A SVG file is generated based on calculated co-ordinates of the watermark
 # text. With RSVG-convert the SVG is
@@ -36,49 +41,49 @@ def draftsvg(A4Width,A4Height,pageWidth,pageHeight):
 
 	#   SVG INTRODUCTION
 		fbackgr.write( '''<svg xmlns="http://www.w3.org/2000/svg"
-	version="1.1" width = "'''+str (round(A4Width,1))+'''" height = "'''+str (round(A4Height,1))+ '''">
-
-	<g><text x = "'''+str (round((A4Width - pageWidth)/2 + 54,1))+ '''" y = "'''+str (round((A4Height - pageHeight)/2 + 120,1))+ '''" style="font-family:DejaVu Sans;font-style:regular;font-size:32;text-anchor:start;fill:#e6e6ff;fill-opacity:1">'''+str (pubProg)+'''</text>
-
-	<text x = "'''+str (round((A4Width)/2,1))+ '''" y = "'''+str (round((A4Height - pageHeight)/2 + 194))+ '''" style="font-family:DejaVu Sans;font-style:regular;font-size:32;text-anchor:middle;fill:#e6e6ff;fill-opacity:1">'''+str (pubProg)+'''</text>
-
-	<text x = "'''+str (round((A4Width + pageWidth)/2-54,1))+ '''" y = "'''+str (round((A4Height - pageHeight)/2 + 268,1))+ '''" style="font-family:DejaVu Sans;font-style:regular;font-size:32;text-anchor:end;fill:#e6e6ff;fill-opacity:1">'''+str (pubProg)+'''</text>
-
-	<text x = "'''+str (round(A4Width/2,1))+ '''" y = "'''+str (round((A4Height - pageHeight)/2 + 342,1))+ '''" style="font-family:DejaVu Sans;font-style:regular;font-size:32;text-anchor:middle;fill:#e6e6ff;fill-opacity:1">'''+str (pubProg)+'''</text>
-
-	<text x = "'''+str (round((A4Width - pageWidth)/2 + 54,1))+ '''" y = "'''+str (round((A4Height - pageHeight)/2 + 416,1))+ '''" style="font-family:DejaVu Sans;font-style:regular;font-size:32;text-anchor:start;fill:#e6e6ff;fill-opacity:1">'''+str (pubProg)+'''</text>
-
-	<text x = "'''+str (round((A4Width + pageWidth)/2 - 10,1))+ '''" y = "'''+str (round((A4Height - pageHeight)/2 + 520 + 36,1))+ '''" style="font-family:DejaVu Sans;font-style:regular;font-weight:bold;font-size:68;text-anchor:end;fill:#e6e6ff;fill-opacity:1">'''+str (pubVers)+''' </text>
-
-	<text x = "'''+str (round((A4Width - pageWidth)/2,1))+ '''" y = "'''+str (round((A4Height + pageHeight)/2 + 72,1))+ '''" style="font-family:DejaVu Sans;font-style:italic;font-size:10;text-anchor:start;fill:000000ff;fill-opacity:1">'''+str (addTxt)+'''</text></g></svg>''')
+	version="1.1" width = "'''+str (A4Width)+'''" height = "'''+str (A4Height)+ '''">
+	<g><text x = "'''+str ((A4Width - pageWidth)/2 + 54)+ '''" y = "'''+str ((A4Height - pageHeight)/2 + 120)+ '''" style="font-family:DejaVu Sans;font-style:regular;font-size:32;text-anchor:start;fill:#e6e6ff;fill-opacity:1">'''+str (pubProg)+'''
+	<tspan x = "'''+str ((A4Width)/2)+ '''" y = "'''+str ((A4Height - pageHeight)/2 + 194)+ '''" style="text-anchor:middle">'''+str (pubProg)+'''</tspan>
+	<tspan x = "'''+str ((A4Width + pageWidth)/2-54)+ '''" y = "'''+str ((A4Height - pageHeight)/2 + 268)+ '''" style="text-anchor:end">'''+str (pubProg)+'''</tspan>
+	<tspan x = "'''+str (A4Width/2)+ '''" y = "'''+str ((A4Height - pageHeight)/2 + 342)+ '''" style="text-anchor:middle">'''+str (pubProg)+'''</tspan>
+	<tspan x = "'''+str ((A4Width - pageWidth)/2 + 54)+ '''" y = "'''+str ((A4Height - pageHeight)/2 + 416)+ '''" style="text-anchor:start">'''+str (pubProg)+'''</tspan>
+	<tspan x = "'''+str ((A4Width + pageWidth)/2 - 36)+ '''" y = "'''+str ((A4Height - pageHeight)/2 + 520 + 36)+ '''" style="font-weight:bold;font-size:68;text-anchor:end">'''+str (pubVers)+''' </tspan>
+	<tspan x = "'''+str ((A4Width - pageWidth)/2)+ '''" y = "'''+str ((A4Height + pageHeight)/2 + 72)+ '''" style="font-style:italic;font-size:10;text-anchor:start;fill:#000000">'''+str (addTxt)+'''</tspan>
+	</text></g></svg>''')
 
 		fbackgr.close()        # GENERATION of background svg finished
 	return
 
 # TEMPORARY FILES
-backgrSVG = tempfile.NamedTemporaryFile().name  #"backgr.svg"
-backgrPDF = tempfile.NamedTemporaryFile().name  #"backgr.pdf"
+backgrSVG = "backgr.svg" #tempfile.NamedTemporaryFile().name  #"backgr.svg"
+backgrPDF = "backgr.pdf" #tempfile.NamedTemporaryFile().name  #"backgr.pdf"
 
-# IMPORTING PAGE DIMENSIONS
-from configobj import ConfigObj
+## DETERMINING PAGE DIMENSIONS
 
-layoutConfig = ConfigObj('layout.conf', encoding='utf-8')
+# Page dimensions can be determined with the pyPdf element "pdf.getPage(0).mediaBox",
+# which results in a RectangleObject([0, 0, Width, Height])
+# PDFs of a blank A4 and a rendered NT page (Rom of the KYU-LATN-NTCAT project) are
+# used to determine the page dimensions in this script.
 
-A4Width = layoutConfig['PageLayout']['A4Width']
-A4Height = layoutConfig['PageLayout']['A4Height']
-pageWidth = layoutConfig['PageLayout']['pageWidth']
-pageHeight = layoutConfig['PageLayout']['pageHeight']
+from pyPdf import PdfFileReader
+pdf = PdfFileReader(open("blankA4.pdf",'rb'))
+var1 = pdf.getPage(0).mediaBox
+bgWidth = var1.getWidth()
+bgHeight = var1.getHeight().real
 
-# The values stored in the config are strings and in mm. To convert them to
-# pixels the need to be changed to float().
+pdf = PdfFileReader(open("Rompage.pdf",'rb'))
+var2 = pdf.getPage(0).mediaBox
+smWidth = var2.getWidth()
+smHeight = var2.getHeight()
 
-factor = 72/25.4    # 1 mm = 72/25.4 pixels
+# The variable type of bgWidth and bgHeight is: <type 'int'>, while smWidth
+# and smHeight give <class 'decimal.Decimal'>. In order to work properly in
+# the draftsvg function the variables have to be <type 'float'>:
 
-aw = float(A4Width) * factor
-ah = float(A4Height) * factor
-pw = float(pageWidth) * factor
-ph = float(pageHeight) * factor
-
+aw = float (bgWidth)
+ah = float (bgHeight)
+pw = float (smWidth)
+ph = float (smHeight)
 
 # TEXT VARIABLES for publication program, publication version and additional
 # information outside the page.
@@ -96,4 +101,16 @@ draftsvg(aw,ah,pw,ph)
 subprocess.call(["rsvg-convert", "-f", "pdf", "-o", backgrPDF, backgrSVG])
 
 #   WATERMARKING procfile with backgrPDF
+# this is only to test the result, it is not part of the watermark generation
 subprocess.call(["pdftk", procfile, "background", backgrPDF, "output", "markedDRAFT.pdf"])
+
+
+
+
+
+
+
+
+
+
+

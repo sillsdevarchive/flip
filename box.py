@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf_8 -*-
 
+# By Flip Wester (flip_wester@sil.org)
+
 ###############################################################################
 ################################ INTRODUCTION #################################
 ###############################################################################
@@ -8,22 +10,24 @@
 # Open with: "./box.py KYUtest.pdf" while the terminal is
 # opened in the workdirectory.
 #
-# This python script will generate a page border for Rapuma projects on
-# A4 size background. Page dimensions are read in from the project's layout
-# config file and converted to float pixel value. The box is centered
-# on the A4 background.
+# This python script will generate a page border for Rapuma projects on a big
+# sheet(A4 size) to define a rendered NT page (A5 size) and centered on the
+# big sheet background. Page dimensions are extracted directly from the pdfs
+# with the pyPdf element # "pdf.getPage(0).mediaBox" and coverted to float
 #
-# A SVG file is generated based on calculated co-ordinates of the box rectangle
-# With RSVG-convert the SVG is converted to a pdf.
+# A SVG file is generated based on extracted sheet and page size. The SVG is
+# converted to a PDF with RSVG-convert
+#
 # The end product combined with a test pdf to a markedBOX pdf that can be opened
 # to check the result.
+# NOTE: This last bit is only to test not part of the current script
 #
 ###############################################################################
 ############################## SETUP ENVIRONMENT ##############################
 ###############################################################################
 
 # IMPORTS
-import os, sys, codecs, subprocess, tempfile
+import os, sys, codecs, subprocess, tempfile, pyPdf
 
 # INITIAL SETTINGS
 procfile = sys.argv[1]      # wholeNT.pdf
@@ -36,9 +40,9 @@ def boxsvg(A4Width, A4Height,pageWidth,pageHeight) :
 
 				# starting lines of SVG xml
 		fbackgr.write( '''<svg xmlns="http://www.w3.org/2000/svg"
-	version="1.1" width = "'''+str (round(A4Width,1))+'''" height = "'''+str (round(A4Height,1))+ '''">''')
+	version="1.1" width = "'''+str (A4Width)+'''" height = "'''+str (A4Height)+ '''">''')
 				# rectangle
-		fbackgr.write( '''<rect x = "'''+str (round((A4Width - pageWidth)/2,1))+'''" y= "'''+str (round((A4Height - pageHeight)/2,1))+'''" height = "'''+str (round(pageHeight,1))+'''" width = "'''+str (round(pageWidth,1))+'''" style = "fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:.2"/>
+		fbackgr.write( '''<rect x = "'''+str ((A4Width - pageWidth)/2)+'''" y= "'''+str ((A4Height - pageHeight)/2)+'''" height = "'''+str (pageHeight)+'''" width = "'''+str (pageWidth)+'''" style = "fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:.2"/>
 	</svg>''')
 
 		fbackgr.close()                                 # close file for writing
@@ -48,33 +52,41 @@ def boxsvg(A4Width, A4Height,pageWidth,pageHeight) :
 backgrSVG = tempfile.NamedTemporaryFile().name  #"backgr.svg"
 backgrPDF = tempfile.NamedTemporaryFile().name  #"backgr.pdf"
 
+## DETERMINING PAGE DIMENSIONS
 
-# IMPORTING PAGE DIMENSIONS
-from configobj import ConfigObj
+# Page dimensions can be determined with the pyPdf element "pdf.getPage(0).mediaBox",
+# which results in a RectangleObject([0, 0, Width, Height])
+# PDFs of a blank A4 and a rendered NT page (Rom of the KYU-LATN-NTCAT project) are
+# used to determine the page dimensions in this script.
 
-layoutConfig = ConfigObj('layout.conf', encoding='utf-8')
+from pyPdf import PdfFileReader
+pdf = PdfFileReader(open("blankA4.pdf",'rb'))
+var1 = pdf.getPage(0).mediaBox
+bgWidth = var1.getWidth()
+bgHeight = var1.getHeight().real
 
-A4Width = layoutConfig['PageLayout']['A4Width']
-A4Height = layoutConfig['PageLayout']['A4Height']
-pageWidth = layoutConfig['PageLayout']['pageWidth']
-pageHeight = layoutConfig['PageLayout']['pageHeight']
+pdf = PdfFileReader(open("Rompage.pdf",'rb'))
+var2 = pdf.getPage(0).mediaBox
+smWidth = var2.getWidth()
+smHeight = var2.getHeight()
 
-# The values stored in the config are strings and in mm. To convert them to
-# pixels the need to be changed to float().
+# The variable type of bgWidth and bgHeight is: <type 'int'>, while smWidth
+# and smHeight give <class 'decimal.Decimal'>. In order to work properly in
+# the boxsvg function the variables have to be <type 'float'>:
 
-factor = 72/25.4    # 1 mm = 72/25.4 pixels
+aw = float (bgWidth)
+ah = float (bgHeight)
+pw = float (smWidth)
+ph = float (smHeight)
 
-aw = float(A4Width) * factor
-ah = float(A4Height) * factor
-pw = float(pageWidth) * factor
-ph = float(pageHeight) * factor
 
-# GENERATE A SVG of the page border; convert to pdf; add page border backgound to the procfile.
+# GENERATE A SVG of the page border; convert to pdf
 
 boxsvg(aw,ah,pw,ph)
 
-#   CONVERSION OF stamp svg into stamp pdf with rsvg-convert
+#   CONVERSION OF backgrsvg into bakgrpdf with rsvg-convert
 subprocess.call(["rsvg-convert", "-f", "pdf", "-o", backgrPDF, backgrSVG])
 
 #   ADD page border to procfile with backgrPDF
+# this is only to test the result, it is not part of the box generation
 subprocess.call(["pdftk", procfile, "background", backgrPDF, "output", "markedBOX.pdf"])
