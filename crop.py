@@ -27,7 +27,8 @@
 ###############################################################################
 
 # IMPORTS
-import os, sys, codecs, subprocess, tempfile
+import os, sys, codecs, subprocess, tempfile, pyPdf
+from pyPdf import PdfFileReader
 
 # INITIAL SETTINGS ./c
 procfile = sys.argv[1]      # KYUtest.pdf
@@ -73,7 +74,6 @@ backgrPDF = tempfile.NamedTemporaryFile().name  #"backgr.pdf"
 # PDFs of a blank A4 and a rendered NT page (Rom of the KYU-LATN-NTCAT project) are
 # used to determine the page dimensions in this script.
 
-from pyPdf import PdfFileReader
 pdf = PdfFileReader(open("blankA4.pdf",'rb'))
 var1 = pdf.getPage(0).mediaBox
 bgWidth = var1.getWidth()

@@ -7,7 +7,7 @@
 ################################ INTRODUCTION #################################
 ###############################################################################
 #
-# Open with: "./watermark.py wholeKYUROM.pdf" while the terminal is
+# Open with: "./draft.py KYUtest.py" while the terminal is
 # opened in the workdirectory.
 #
 # This python script will generate a DRAFT watermark for Rapuma projects ona big
@@ -28,10 +28,17 @@
 ###############################################################################
 
 # IMPORTS
-import os, sys, codecs, subprocess, tempfile
+import os, sys, codecs, subprocess, tempfile, pyPdf
+from pyPdf import PdfFileReader
 
 # INITIAL SETTINGS
 procfile = sys.argv[1]      # wholeNT.pdf
+
+# TEXT VARIABLES for publication program, publication version and additional
+# information outside the page.
+pubProg = "Rapuma"
+pubVers = "DRAFT"
+addTxt = "[sample text at the bottom of the page:] KYU-LATN-NT rom draft 2014-04-23"
 
 # FUNCTION DEFINITION
 def draftsvg(A4Width,A4Height,pageWidth,pageHeight):
@@ -65,7 +72,6 @@ backgrPDF = "backgr.pdf" #tempfile.NamedTemporaryFile().name  #"backgr.pdf"
 # PDFs of a blank A4 and a rendered NT page (Rom of the KYU-LATN-NTCAT project) are
 # used to determine the page dimensions in this script.
 
-from pyPdf import PdfFileReader
 pdf = PdfFileReader(open("blankA4.pdf",'rb'))
 var1 = pdf.getPage(0).mediaBox
 bgWidth = var1.getWidth()
@@ -84,12 +90,6 @@ aw = float (bgWidth)
 ah = float (bgHeight)
 pw = float (smWidth)
 ph = float (smHeight)
-
-# TEXT VARIABLES for publication program, publication version and additional
-# information outside the page.
-pubProg = "Rapuma"
-pubVers = "DRAFT"
-addTxt = "[sample text at the bottom of the page:] KYU-LATN-NT rom draft 2014-04-23"
 
 
 #GENERATE A SVG of the watermark
